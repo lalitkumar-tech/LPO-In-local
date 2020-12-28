@@ -1,0 +1,31 @@
+package com.lalit.domain;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import lombok.Data;
+
+@Entity
+@JsonIgnoreProperties(ignoreUnknown = true)		//=======>ask
+@Data
+public class State extends BaseEntity{
+
+	private static final long serialVersionUID = 1L;
+	private Long countryId;
+	private String stateName;
+	private String stateCode;
+	private boolean status;
+	protected boolean deleted;
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+}
