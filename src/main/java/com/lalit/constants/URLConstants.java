@@ -7,11 +7,15 @@ import lombok.NoArgsConstructor;
 public class URLConstants {
 	
 	public static final String USERID ="/{userId}";
+	public static final String CONTACTID ="/{contactId}";
+	
 	public static final String USER_PROFILE ="/user_profile";
 	public static final String USER_LIMITED_DATA ="/user_limited_data"+USERID;
 	public static final String GET_USER_PROFILE ="/user_profile"+USERID;
 	
 	public static final String CONTACT ="/contact";
+	public static final String DELETE_CONTACT =CONTACT+"/delete"+USERID+CONTACTID;
+	
 	public static final String SPOUSE =CONTACT+"/spouse"+USERID;
 	public static final String CHILD =CONTACT+"/child"+USERID;
 	

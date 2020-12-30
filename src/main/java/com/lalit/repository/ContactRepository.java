@@ -18,6 +18,26 @@ public interface ContactRepository extends JpaRepository<Contact, Long>{
 	List<Contact> findByUserIdAndDeletedFalse(Long userId);
 
 
+	Contact findByIdAndUserIdAndRelationInAndDeletedFalse(Long id, Long spouseId, List<RelationType> asList);
+
+
+	int countByUserIdAndRelationInAndDeletedFalse(Long spouseId, List<RelationType> asList);
+
+
+	List<Contact> findByUserIdAndEmailAndIsFiduciaryAndIsBeneficiaryAndDeletedFalse(Long userId, String email,
+			Boolean isBeneficiary, Boolean isFiduciary);
+
+
+	long countByUserIdAndIsEmergencyContactTrueAndDeletedFalse(Long spouseId);
+
+
+	Contact findByIdAndUserIdAndDeletedFalse(Long contactId, Long userId);
+
+
+	List<Contact> findByUserIdAndFirstNameAndLastNameAndRelationAndDeletedFalse(Long userId, String firstName,
+			String lastName, RelationType relation);
+
+
 	
 
 

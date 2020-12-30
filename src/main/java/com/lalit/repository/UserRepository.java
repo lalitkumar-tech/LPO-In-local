@@ -12,4 +12,6 @@ public interface UserRepository extends JpaRepository<User, Long>{
 
 	Optional<User> findByIdAndEnabledTrue(Long userId);
 
+	Optional<User> findByIdAndDeletedFalse(Long id);
+
 }

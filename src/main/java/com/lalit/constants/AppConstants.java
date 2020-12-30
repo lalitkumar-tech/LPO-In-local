@@ -14,4 +14,7 @@ public class AppConstants {
 	public static final String CONTACT_EMAIL = "email";
 	public static final String RELATION = "relation";
 	public static final String CONTACT_ID = "contactId";
+
+
+	public static final int MINIMUM_AGE = 18;
 }

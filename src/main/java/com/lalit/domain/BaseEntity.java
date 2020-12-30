@@ -49,5 +49,57 @@ public class BaseEntity implements Serializable{
 	protected Date deletedOn;
 
 	protected boolean deleted;
+	
+	public BaseEntity() {
+		super();
+	}
+	public BaseEntity(Long id, Date createdOn, Date updatedOn, Date deletedOn, boolean deleted) {
+		super();
+		this.id = id;
+		this.createdOn = createdOn;
+		this.updatedOn = updatedOn;
+		this.deletedOn = deletedOn;
+		this.deleted = deleted;
+	}
+	public Long getId() {
+		return id;
+	}
+	public void setId(Long id) {
+		this.id = id;
+	}
+	public Date getCreatedOn() {
+		return createdOn;
+	}
+	public void setCreatedOn(Date createdOn) {
+		this.createdOn = createdOn;
+	}
+	public Date getUpdatedOn() {
+		return updatedOn;
+	}
+	public void setUpdatedOn(Date updatedOn) {
+		this.updatedOn = updatedOn;
+	}
+	public Date getDeletedOn() {
+		return deletedOn;
+	}
+	public void setDeletedOn(Date deletedOn) {
+		this.deletedOn = deletedOn;
+	}
+	public boolean isDeleted() {
+		return deleted;
+	}
+	public void setDeleted(boolean deleted) {
+		this.deleted = deleted;
+	}
+	public static long getSerialversionuid() {
+		return serialVersionUID;
+	}
+	@Override
+	public String toString() {
+		return "BaseEntity [id=" + id + ", createdOn=" + createdOn + ", updatedOn=" + updatedOn + ", deletedOn="
+				+ deletedOn + ", deleted=" + deleted + "]";
+	}
+	
+	
 }
 	
