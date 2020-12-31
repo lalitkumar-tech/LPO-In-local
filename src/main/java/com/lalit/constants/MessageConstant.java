@@ -21,6 +21,7 @@ public class MessageConstant {
 	public static final String DELETED_SUCCESSFULLY = "deleted.successfully";
 	public static final String RELATION_SHOULD_EXISTS = "relation.should.present";
 	public static final String CHILD_NOT_FOUND = "child.not.found";
+	public static final String CONTACT_ALREADY_PRESENT = "contact.already.present";
 	
 	
 }

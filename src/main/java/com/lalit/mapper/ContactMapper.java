@@ -8,11 +8,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
 
 import com.lalit.config.EnvVariables;
 import com.lalit.constants.AppConstants;
@@ -23,6 +23,7 @@ import com.lalit.domain.Country;
 import com.lalit.domain.State;
 import com.lalit.domain.User;
 import com.lalit.dto.ChildDto;
+import com.lalit.dto.FiduciaryDto;
 import com.lalit.dto.SpouseDto;
 import com.lalit.enums.BeneficiaryType;
 import com.lalit.enums.Gender;
@@ -557,7 +558,149 @@ public class ContactMapper {
 
 	}
 
+	public Contact toFiduciary(FiduciaryDto contactDto, Boolean isFid, Boolean isBen) {
+		//create a new Contact ref. variable == null
+		//create a newContact flage and set it true
+		//check if : it is existing contact { 1.fetch it from DB 2.throw Exc. if not found 3.check if updating spouse {1.count all the existing spouses 2.if more than 1 or == 1 and fetched contact not = to spouse ---> throw Exc. Spouse Already Present} and set newContact flage true }
+		//	   else: it is a new contact {1. check if relation == spouse -->check spouse should not more than one  else throw Exc. Spouse Already Present 2. checkDuplicate 3. assign new Contact to ref. variable created at step1.  }
+		//check if: Emergency contact == true than should not more than 3 else throw Exc.
+		Contact fiduciary = null;
+
+		boolean newContact = true;
+		if (contactDto.getId() != null) {
+			LOGGER.info("=============exsiting user ====updating it =======================");
+			fiduciary = contactRepository.findByIdAndUserIdAndDeletedFalse(contactDto.getId(), contactDto.getUserId());
+			if (Objects.isNull(fiduciary)) {
+				throw DataNotFoundException.of(MessageConstant.CONTACT_NOT_FOUND);
+			}
+
+			if (RelationType.spouseList.stream().anyMatch(
+					spouse -> spouse.name().equals(RelationType.getByName(contactDto.getRelation()).name()))) {
+				LOGGER.info("=======================if updating fiduciary's spouse field ===================");
+				long spousesExists = contactRepository.countByUserIdAndRelationInAndDeletedFalse(contactDto.getUserId(),
+						RelationType.spouseList);
+				if ((spousesExists > 1)
+						|| (spousesExists == 1 && !RelationType.spouseList.contains(fiduciary.getRelation()))) {
+					LOGGER.info("==========more than one spouse is not allowed==========");
+					throw DataNotFoundException.of(localeService.getMessage(MessageConstant.CONTACT_ALREADY_PRESENT,
+							new Object[] { "Spouse" }));
+				}
+			}
+			newContact = false;
+		} else {
+			LOGGER.info("================adding new fiduciary================");
+			if (RelationType.spouseList.stream()
+					.anyMatch(spouse -> spouse.name().equals(RelationType.getByName(contactDto.getRelation()).name()))
+					&& contactRepository.countByUserIdAndRelationInAndDeletedFalse(contactDto.getUserId(),
+							RelationType.spouseList) > 0) {
+				LOGGER.info("==========checking that spouse not more than one==============");
+				throw DataNotFoundException.of(
+						localeService.getMessage(MessageConstant.CONTACT_ALREADY_PRESENT, new Object[] { "Spouse" }));
+			}
+			checkDuplicateEntry(contactDto.getUserId(), contactDto.getEmail(), isBen, isFid);
+			fiduciary = new Contact();
+		}
+
+		User user = new User();
+		user.setId(contactDto.getUserId());
+
+		if (contactDto.getIsEmergencyContact() != null) { 
+															 
+			if (contactDto.getIsEmergencyContact()) {
+				if (newContact || Objects.isNull(fiduciary.getIsEmergencyContact())
+						|| !fiduciary.getIsEmergencyContact()) {
+					long num = contactRepository
+							.countByUserIdAndIsEmergencyContactTrueAndDeletedFalse(contactDto.getUserId());
+					if (num >= envVariables.getMaxEmergencyContact()) {
+						throw DataNotFoundException
+								.of(localeService.getMessage(MessageConstant.MAX_EMERGENCY_CONTACT_ALLOWED,
+										new Object[] { envVariables.getMaxEmergencyContact() }));
+					}
+				}
+			}
+		}
+		fiduciary.setIsEmergencyContact(contactDto.getIsEmergencyContact());
+
+		fiduciary.setContactType(contactDto.getContactType());
+
+		if (!StringUtils.equalsIgnoreCase("Professional", contactDto.getContactType())
+				&& Objects.isNull(contactDto.getIsUsCitizen())) {
+			throw DataNotFoundException.of(localeService.getMessage(MessageConstant.US_CITIZEN_NOT_SELECTED));
+		}
+
+		fiduciary.setIsUsCitizen(contactDto.getIsUsCitizen());
+		fiduciary.setGender(Gender.getByName(contactDto.getGender()));
+		fiduciary.setDob(GeneralUtils.getDate(contactDto.getDob()));
+
+		fiduciary.setUser(user);
+		fiduciary.setFullName(contactDto.getFullName());
+
+		fiduciary.setFirstName(contactDto.getFirstName());
+		fiduciary.setMiddleName(contactDto.getMiddleName());
+		fiduciary.setLastName(contactDto.getLastName());
+		fiduciary.setNickName(contactDto.getNickName());
+
+		fiduciary.setEmail(contactDto.getEmail());
+		fiduciary.setSecondaryEmail(contactDto.getSecondaryEmail());
+		fiduciary.setTertiaryEmail(contactDto.getTertiaryEmail());
+		fiduciary.setPhoneNumber(contactDto.getPhoneNumber());
+		fiduciary.setSecondaryMobileNumber(contactDto.getSecondaryMobileNumber());
+		fiduciary.setTertiaryMobileNumber(contactDto.getTertiaryMobileNumber());
+
+		fiduciary.setIsFiduciary(isFid);
+		fiduciary.setIsBeneficiary(isBen);
+
+		Optional<Country> optCountry = countryRepository.findById(contactDto.getCountryId());
+		if (optCountry.isPresent()) {
+			Country country = optCountry.get();
+			fiduciary.setCountry(country);
+		}
+		Optional<State> optState = stateRepository.findById(contactDto.getStateId());
+		if (optState.isPresent()) {
+			State state = optState.get();
+			fiduciary.setState(state);
+		}
+		fiduciary.setCity2(contactDto.getCity());
+		fiduciary.setAddressLine1(contactDto.getAddressLine1());
+		fiduciary.setAddressLine2(contactDto.getAddressLine2());
+		fiduciary.setZipCode(contactDto.getZipCode());
+
+		fiduciary.setNotifyAllEvent(contactDto.getNotifyAllEvent());
+		fiduciary.setNotifyOnSmallProcedures(contactDto.getNotifyOnSmallProcedures());
+		fiduciary.setNotifyOnEOL(contactDto.getNotifyOnEOL());
+		fiduciary.setNotifyOnPassing(contactDto.getNotifyOnPassing());
+		fiduciary.setSendGreeting(contactDto.getSendGreeting());
+
+		fiduciary.setContactGroup(contactDto.getContactGroup());
+		fiduciary.setRelation(RelationType.getByName(contactDto.getRelation()));
+		fiduciary.setCompanyName(contactDto.getCompanyName());
+
+		return fiduciary;
+		
+	}
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

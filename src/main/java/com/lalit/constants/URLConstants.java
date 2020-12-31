@@ -13,11 +13,12 @@ public class URLConstants {
 	public static final String USER_LIMITED_DATA ="/user_limited_data"+USERID;
 	public static final String GET_USER_PROFILE ="/user_profile"+USERID;
 	
-	public static final String CONTACT ="/contact";
-	public static final String DELETE_CONTACT =CONTACT+"/delete"+USERID+CONTACTID;
+	public static final String CONTACT ="/contact"+USERID;
+	public static final String DELETE_CONTACT =CONTACT+CONTACTID;
 	
-	public static final String SPOUSE =CONTACT+"/spouse"+USERID;
-	public static final String CHILD =CONTACT+"/child"+USERID;
+	
+	public static final String SPOUSE ="/contact"+"/spouse"+USERID;
+	public static final String CHILD ="/contact"+"/child"+USERID;
 	
 
 	public static final String BASE_UTIL ="/util";

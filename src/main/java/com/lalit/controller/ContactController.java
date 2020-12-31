@@ -16,8 +16,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.lalit.constants.MessageConstant;
 import com.lalit.constants.URLConstants;
 import com.lalit.dto.ChildDto;
+import com.lalit.dto.FiduciaryDto;
 import com.lalit.dto.SpouseDto;
 import com.lalit.mapper.ContactMapper;
+import com.lalit.mapper.FiduciaryMapper;
 import com.lalit.service.ContactService;
 import com.lalit.utils.LPOResponse;
 import com.lalit.utils.LocaleService;
@@ -60,10 +62,8 @@ public class ContactController {
 	@ApiOperation(value = "Adding or updating the spouse ")
 	@PostMapping(URLConstants.SPOUSE)
 	public ResponseEntity<LPOResponse> addSpouse(@PathVariable Long userId, SpouseDto spouseDto) throws Exception {
-		LOGGER.info("===============setting the SpouseId of spouseDto to userId==============");
 		spouseDto.setSpouseId(userId);
 		spouseDto = contactService.addSpouse(spouseDto);
-
 		// Skipped the profile photo upload functionality
 
 		return ResponseEntity.ok(
@@ -90,6 +90,32 @@ public class ContactController {
 		return ResponseEntity.ok(
 				new LPOResponse.LPOResposeBuilder(false, localeService.getMessage(MessageConstant.SAVED_SUCCESSFULLY))
 						.data(childDto, 1).build());
+	}
+
+	@ApiOperation(value = "getting all contacts")
+	@GetMapping(URLConstants.CONTACT)
+	public ResponseEntity<LPOResponse> getContacts(@PathVariable Long userId) {
+		List<FiduciaryDto> contacts = contactService.getAllContacts(userId).stream()
+				.map(FiduciaryMapper::toFiduciaryDto).collect(Collectors.toList());
+		return ResponseEntity.ok(new LPOResponse.LPOResposeBuilder(false,
+				localeService.getMessage(
+						!contacts.isEmpty() ? MessageConstant.FETCHED_SUCCESSFULLY : MessageConstant.DATA_NOT_FOUND))
+								.data(contacts, contacts.size()).build());
+
+	}
+
+	@ApiOperation(value = "Adding and Upadting a new contact")
+	@PostMapping(URLConstants.CONTACT)
+	public ResponseEntity<LPOResponse> addNewContact(@PathVariable Long userId, FiduciaryDto contactDto) {
+		
+		LOGGER.info("==============contact controller==========");
+		contactDto.setUserId(userId);
+		contactDto = contactService.addContact(contactDto);
+		//skipped the file upload functionality
+		
+		return ResponseEntity.ok(
+				new LPOResponse.LPOResposeBuilder(false, localeService.getMessage(MessageConstant.SAVED_SUCCESSFULLY))
+						.data(contactDto, 1).build());
 	}
 
 }

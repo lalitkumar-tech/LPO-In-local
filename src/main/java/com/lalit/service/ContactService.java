@@ -14,8 +14,10 @@ import com.lalit.constants.MessageConstant;
 import com.lalit.domain.Contact;
 import com.lalit.domain.User;
 import com.lalit.dto.ChildDto;
+import com.lalit.dto.FiduciaryDto;
 import com.lalit.dto.SpouseDto;
 import com.lalit.enums.AccountType;
+import com.lalit.enums.BeneficiaryType;
 import com.lalit.enums.RelationType;
 import com.lalit.exception.DataNotFoundException;
 import com.lalit.mapper.ContactMapper;
@@ -97,6 +99,22 @@ public class ContactService {
 		}
 		childDto.setId(child.getId());
 		return childDto;
+	}
+
+	public List<Contact> getAllContacts(Long userId) {
+		LOGGER.info("=================getting all contacts============");
+		List<Contact> contacts = contactRepo.findByUserIdAndDeletedFalse(userId);
+		return contacts;
+	}
+
+	public FiduciaryDto addContact(FiduciaryDto contactDto) {
+		LOGGER.info("================under addContact()==========");
+		Contact contact = contactMapper.toFiduciary(contactDto, contactDto.getIsFiduciary(),
+				contactDto.getIsBeneficiary());
+		contact.setBeneficiaryType(BeneficiaryType.INDIVIDUAL);
+		contact = contactRepo.save(contact);
+		contactDto.setId(contact.getId());
+		return contactDto;
 	}
 	
 
